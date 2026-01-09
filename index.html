@@ -3,83 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Himanshu AI | Coder IDE</title>
+    <title>Himanshu AI | Enterprise v7</title>
     <script src="https://js.puter.com/v2/"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Outfit:wght@300;600;800&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
     <style>
-        :root { --bg: #050507; --accent: #00f2ff; --dev: #7ee787; --research: #ff007a; --border: rgba(255, 255, 255, 0.08); }
-        body { margin: 0; background: var(--bg); color: #e4e4e7; font-family: 'Outfit', sans-serif; display: flex; height: 100vh; overflow: hidden; }
+        :root { --bg: #030305; --accent: #00f2ff; --dev: #7ee787; --glass: rgba(255, 255, 255, 0.03); --border: rgba(255, 255, 255, 0.07); }
+        body, html { margin: 0; padding: 0; background: var(--bg); color: #e4e4e7; font-family: 'Outfit', sans-serif; height: 100vh; overflow: hidden; }
+
+        /* Login Screen */
+        #auth-gate { position: fixed; inset: 0; z-index: 999; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at center, #111, #000); }
+        .login-card { background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 40px; border-radius: 24px; backdrop-filter: blur(20px); width: 350px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+        .login-card input { width: 100%; background: var(--glass); border: 1px solid var(--border); padding: 12px; margin: 10px 0; border-radius: 10px; color: white; outline: none; box-sizing: border-box; }
+        .login-card button { width: 100%; background: var(--accent); color: #000; padding: 12px; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; margin-top: 10px; transition: 0.3s; }
+        .login-card button:hover { transform: scale(1.02); box-shadow: 0 0 20px rgba(0, 242, 255, 0.4); }
+
+        /* Main App (Hidden initially) */
+        #main-app { display: none; height: 100vh; flex-direction: row; }
+        .sidebar { width: 260px; background: #0a0a0c; border-right: 1px solid var(--border); padding: 30px 15px; display: flex; flex-direction: column; gap: 8px; }
+        .workspace { flex: 1; display: flex; flex-direction: column; position: relative; }
         
-        /* Sidebar Navigation */
-        .sidebar { width: 240px; background: #0a0a0c; border-right: 1px solid var(--border); padding: 30px 15px; display: flex; flex-direction: column; gap: 8px; }
-        .logo { font-size: 1.2rem; font-weight: 800; color: var(--accent); margin-bottom: 30px; padding-left: 10px; }
-        .nav-btn { padding: 12px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; color: #a1a1aa; font-size: 0.9rem; }
-        .nav-btn:hover { background: rgba(255,255,255,0.05); color: #fff; }
-        .nav-btn.active { background: rgba(0, 242, 255, 0.1); color: var(--accent); border: 1px solid rgba(0, 242, 255, 0.2); }
-
-        /* Main Workspace */
-        .workspace { flex: 1; display: flex; flex-direction: row; overflow: hidden; }
-        .chat-section { flex: 1; display: flex; flex-direction: column; border-right: 1px solid var(--border); }
-        .preview-section { flex: 1; background: #fff; position: relative; display: none; }
-        .preview-section.active { display: block; }
-
-        /* Chat Flow */
-        #chat-flow { flex: 1; overflow-y: auto; padding: 40px 10%; }
-        .msg { margin-bottom: 30px; display: flex; gap: 20px; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } }
-        .avatar { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .ai-avatar { background: var(--accent); color: #000; }
-        .dev-avatar { background: var(--dev); color: #000; }
-        .content { flex: 1; line-height: 1.7; }
-        pre { background: #000; padding: 15px; border-radius: 12px; border: 1px solid var(--border); overflow-x: auto; position: relative; }
-        code { font-family: 'JetBrains Mono', monospace; color: var(--dev); }
-
-        /* Floating Toolbars */
-        .input-bar { padding: 20px 10% 30px; background: linear-gradient(to top, var(--bg) 80%, transparent); }
-        .bar-inner { background: #111114; border: 1px solid var(--border); border-radius: 16px; padding: 10px 15px; display: flex; align-items: center; gap: 12px; }
+        /* Chat & Tools */
+        #chat-flow { flex: 1; overflow-y: auto; padding: 40px 15%; }
+        .input-deck { padding: 20px 15% 40px; }
+        .bar-container { background: #111114; border: 1px solid var(--border); border-radius: 20px; padding: 8px 15px; display: flex; align-items: center; gap: 12px; }
         textarea { flex: 1; background: none; border: none; color: #fff; outline: none; font-size: 1rem; resize: none; }
-        .run-btn { background: var(--dev); color: #000; border: none; padding: 8px 15px; border-radius: 8px; font-weight: 800; cursor: pointer; font-size: 0.8rem; }
+        .tool-btn { color: #71717a; cursor: pointer; font-size: 1.3rem; transition: 0.2s; }
+        .tool-btn:hover { color: var(--accent); }
+
+        /* Coder Mode UI */
+        .msg.dev { border-left: 3px solid var(--dev); padding-left: 15px; background: rgba(126, 231, 135, 0.02); }
+        .ai-avatar { background: var(--accent); color: #000; }
+        .user-avatar { background: #27272a; }
+        .nav-btn { padding: 12px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; color: #a1a1aa; }
+        .nav-btn.active { background: rgba(0, 242, 255, 0.1); color: var(--accent); }
     </style>
 </head>
 <body>
 
-    <aside class="sidebar">
-        <div class="logo">HIMANSHU AI</div>
-        <div id="btn-chat" class="nav-btn active" onclick="setMode('chat')"><span class="material-symbols-rounded">chat</span> General</div>
-        <div id="btn-dev" class="nav-btn" onclick="setMode('dev')"><span class="material-symbols-rounded">terminal</span> Coder Mode</div>
-        <div id="btn-res" class="nav-btn" onclick="setMode('research')"><span class="material-symbols-rounded">travel_explore</span> Deep Research</div>
-        <div style="margin-top:auto" class="nav-btn" onclick="togglePreview()"><span class="material-symbols-rounded">view_quilt</span> Toggle Preview</div>
-    </aside>
+    <div id="auth-gate">
+        <div class="login-card">
+            <h2 style="color:var(--accent); margin-bottom: 5px;">HIMANSHU AI</h2>
+            <p style="font-size: 0.8rem; color: #71717a; margin-bottom: 30px;">Access Secure Neural Link</p>
+            <input type="text" id="user-email" placeholder="Email Address">
+            <input type="password" id="user-pass" placeholder="Secure Password">
+            <button onclick="login()">INITIALIZE SYSTEM</button>
+            <p style="font-size: 0.7rem; color: #52525b; margin-top: 20px;">v7.0 Stable Enterprise Edition</p>
+        </div>
+    </div>
 
-    <div class="workspace">
-        <section class="chat-section">
-            <div id="chat-flow">
-                <div class="msg">
-                    <div class="avatar ai-avatar"><span class="material-symbols-rounded">auto_awesome</span></div>
-                    <div class="content"><strong>IDE Mode Initialized.</strong><br>I can now write code and show you a <strong>Live Preview</strong>. Try asking me to build a "dark theme dashboard."</div>
+    <div id="main-app">
+        <aside class="sidebar">
+            <div style="font-weight:800; color:var(--accent); margin-bottom:30px; font-size:1.2rem;">H-AI ARCHITECT</div>
+            <div id="btn-chat" class="nav-btn active" onclick="setMode('chat')"><span class="material-symbols-rounded">chat_bubble</span> Chat & Logic</div>
+            <div id="btn-dev" class="nav-btn" onclick="setMode('dev')"><span class="material-symbols-rounded">terminal</span> Coder Hub</div>
+            <div id="btn-res" class="nav-btn" onclick="setMode('research')"><span class="material-symbols-rounded">manage_search</span> Deep Research</div>
+            <div class="nav-btn" onclick="location.reload()" style="margin-top:auto;"><span class="material-symbols-rounded">logout</span> Terminal Exit</div>
+        </aside>
+
+        <main class="workspace">
+            <div id="chat-flow"></div>
+            <div class="input-deck">
+                <div class="bar-container">
+                    <span class="material-symbols-rounded tool-btn" onclick="alert('File Explorer coming soon')">attach_file</span>
+                    <textarea id="prompt" placeholder="Analyze code, research, or chat..." rows="1"></textarea>
+                    <span class="material-symbols-rounded tool-btn" onclick="startVoice()">mic</span>
+                    <span class="material-symbols-rounded tool-btn" style="color:var(--accent); font-weight:800;" onclick="execute()">send</span>
                 </div>
             </div>
-
-            <div class="input-bar">
-                <div class="bar-inner">
-                    <textarea id="prompt" placeholder="Message Himanshu AI..." rows="1"></textarea>
-                    <button class="run-btn" onclick="send()">SEND</button>
-                </div>
-            </div>
-        </section>
-
-        <section id="preview-panel" class="preview-section">
-            <div style="padding:10px; background:#f4f4f5; border-bottom:1px solid #ddd; font-size:0.8rem; display:flex; justify-content:space-between; color:#555">
-                <span>LIVE PREVIEW</span>
-                <span class="material-symbols-rounded" style="font-size:1rem; cursor:pointer" onclick="togglePreview()">close</span>
-            </div>
-            <iframe id="renderer" style="width:100%; height:calc(100% - 40px); border:none;"></iframe>
-        </section>
+        </main>
     </div>
 
     <script type="module">
-        const KEY = "AIzaSyAIoMr29qRilRdjpSbZOfbNBT_FMFK1c30";
+        const API_KEY = "AIzaSyAIoMr29qRilRdjpSbZOfbNBT_FMFK1c30";
         let mode = 'chat';
+
+        window.login = () => {
+            const email = document.getElementById('user-email').value;
+            if(email.includes('@')) {
+                document.getElementById('auth-gate').style.display = 'none';
+                document.getElementById('main-app').style.display = 'flex';
+                addMsg(`Welcome back, **${email.split('@')[0]}**. System is ready for advanced tasks.`, 'ai');
+            } else { alert("Please enter a valid credential."); }
+        };
 
         window.setMode = (m) => {
             mode = m;
@@ -87,54 +92,46 @@
             document.getElementById(`btn-${m.substring(0,3)}`).classList.add('active');
         };
 
-        window.togglePreview = () => {
-            document.getElementById('preview-panel').classList.toggle('active');
-        };
-
-        window.send = async () => {
-            const input = document.getElementById('prompt');
-            const val = input.value.trim();
+        window.execute = async () => {
+            const el = document.getElementById('prompt');
+            const val = el.value.trim();
             if(!val) return;
-            
-            addMsg(val, 'user');
-            input.value = '';
 
-            const msgObj = addMsg("Processing logic...", mode === 'dev' ? 'dev' : 'ai', true);
+            addMsg(val, 'user');
+            el.value = '';
+
+            const status = addMsg("Calculating...", 'ai', true);
 
             try {
-                let systemPrompt = "You are a helpful AI.";
-                if(mode === 'dev') systemPrompt = "You are an expert Senior Full Stack Developer. Always provide complete, working code blocks. Wrap HTML/CSS/JS code in triple backticks.";
-                if(mode === 'research') systemPrompt = "You are a Deep Research agent. Use the Google Search tool to find facts.";
+                let context = mode === 'dev' ? "SYSTEM: Acting as Senior Architect. Review and write optimized code." : "SYSTEM: Assist user.";
+                if(val.startsWith('/draw')) { return await genImg(val, status); }
 
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${KEY}`, {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ 
-                        contents: [{ parts: [{ text: `${systemPrompt}\n\nUser Query: ${val}` }] }],
-                        tools: mode === 'research' ? [{ googleSearch: {} }] : []
-                    })
+                    body: JSON.stringify({ contents: [{ parts: [{ text: `${context}\n\nUser: ${val}` }] }] })
                 });
 
                 const data = await res.json();
-                const responseText = data.candidates[0].content.parts[0].text;
-                msgObj.querySelector('.content').innerHTML = parse(responseText);
-
-                // Extract and Preview Code
-                const codeMatch = responseText.match(/```html\n([\s\S]*?)```/);
-                if(codeMatch) {
-                    document.getElementById('renderer').srcdoc = codeMatch[1];
-                    document.getElementById('preview-panel').classList.add('active');
-                }
-            } catch (e) {
-                msgObj.querySelector('.content').innerText = "System error. Check API configuration.";
-            }
+                status.querySelector('.content').innerHTML = parse(data.candidates[0].content.parts[0].text);
+            } catch (e) { status.querySelector('.content').innerHTML = "ERROR: Failed to connect to Neural Cloud."; }
         };
 
-        function addMsg(text, role, pending = false) {
+        async function genImg(p, msgObj) {
+            msgObj.querySelector('.content').innerText = "Synthesizing 4K Visuals...";
+            try {
+                const img = await puter.ai.txt2img(p.replace('/draw',''), { provider: "together-ai" });
+                msgObj.querySelector('.content').innerHTML = "";
+                img.style.width = "100%"; img.style.borderRadius = "12px";
+                msgObj.querySelector('.content').appendChild(img);
+            } catch { msgObj.querySelector('.content').innerText = "Image synthesis node busy. Retry in 60s."; }
+        }
+
+        function addMsg(t, role, pending = false) {
             const div = document.createElement('div');
-            div.className = 'msg';
-            const icon = role === 'dev' ? 'terminal' : (role === 'user' ? 'person' : 'auto_awesome');
-            div.innerHTML = `<div class="avatar ${role}-avatar"><span class="material-symbols-rounded">${icon}</span></div><div class="content">${pending ? text : parse(text)}</div>`;
+            div.className = `msg ${mode === 'dev' ? 'dev' : ''}`;
+            const icon = role==='user'?'person':'auto_awesome';
+            div.innerHTML = `<div class="avatar ${role}-avatar"><span class="material-symbols-rounded">${icon}</span></div><div class="content">${pending?t:parse(t)}</div>`;
             document.getElementById('chat-flow').appendChild(div);
             document.getElementById('chat-flow').scrollTop = document.getElementById('chat-flow').scrollHeight;
             return div;
@@ -142,11 +139,9 @@
 
         function parse(t) {
             return t.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+                    .replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre style="background:#000; padding:15px; border-radius:10px; border:1px solid var(--border);"><code>$2</code></pre>')
                     .replace(/\n/g, '<br>');
         }
-        
-        document.getElementById('prompt').addEventListener('keydown', (e) => { if(e.key==='Enter' && !e.shiftKey) { e.preventDefault(); send(); }});
     </script>
 </body>
 </html>
