@@ -3,161 +3,192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Himanshu AI | Admin v11</title>
+    <title>Himanshu AI | Omni-Core v14</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;800&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
     <style>
         :root { --accent: #00f2ff; --admin: #ffcc00; --bg: #030305; --glass: rgba(255, 255, 255, 0.05); --border: rgba(255, 255, 255, 0.1); }
-        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Outfit', sans-serif; overflow: hidden; }
+        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Outfit', sans-serif; overflow: hidden; height: 100vh; }
         
-        /* AUTH & APP TOGGLES */
-        #auth-gate { position: fixed; inset: 0; z-index: 2000; background: #000; display: flex; align-items: center; justify-content: center; }
-        #main-app { display: none; height: 100vh; flex-direction: row; }
+        /* AUTHENTICATION */
+        #auth-gate { position: fixed; inset: 0; z-index: 5000; background: #000; display: flex; align-items: center; justify-content: center; }
+        .auth-card { width: 380px; background: var(--glass); backdrop-filter: blur(20px); padding: 40px; border-radius: 30px; border: 1px solid var(--border); text-align: center; }
 
-        /* ADMIN DATABASE TABLE */
-        .admin-db-container { margin: 20px; background: rgba(0,0,0,0.5); border: 1px solid var(--admin); border-radius: 15px; padding: 20px; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.85rem; }
+        /* LAYOUT */
+        #main-app { display: none; height: 100vh; grid-template-columns: 280px 1fr; }
+        .sidebar { background: #070709; border-right: 1px solid var(--border); padding: 25px; display: flex; flex-direction: column; gap: 10px; }
+        .workspace { display: flex; flex-direction: column; background: var(--bg); position: relative; }
+
+        /* CHAT BUBBLES */
+        #chat-flow { flex: 1; overflow-y: auto; padding: 40px 10%; display: flex; flex-direction: column; gap: 20px; }
+        .msg { padding: 15px 20px; border-radius: 18px; max-width: 80%; line-height: 1.5; }
+        .user-msg { align-self: flex-end; background: var(--accent); color: #000; font-weight: 600; }
+        .ai-msg { align-self: flex-start; background: var(--glass); border: 1px solid var(--border); }
+
+        /* ADMIN OVERLAY */
+        #admin-panel { 
+            position: absolute; inset: 20px; background: rgba(5, 5, 5, 0.98); 
+            border: 1px solid var(--admin); border-radius: 20px; z-index: 1000; 
+            display: none; padding: 30px; overflow-y: auto;
+        }
+
+        .btn { padding: 12px 20px; border-radius: 10px; border: none; font-weight: 800; cursor: pointer; }
+        .input-area { padding: 20px 10%; background: #0a0a0c; display: flex; gap: 15px; }
+        input { flex: 1; background: var(--glass); border: 1px solid var(--border); padding: 15px; border-radius: 12px; color: white; outline: none; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th { text-align: left; color: var(--admin); border-bottom: 1px solid var(--admin); padding: 10px; }
-        td { padding: 10px; border-bottom: 1px solid var(--border); }
-        
-        .action-btn { padding: 5px 10px; border-radius: 5px; cursor: pointer; border: none; font-weight: 800; font-size: 0.7rem; }
-        .reset-btn { background: #ff4d4d; color: white; }
-        .reveal-btn { background: var(--accent); color: #000; margin-right: 5px; }
-
-        /* REGULAR UI */
-        .sidebar { width: 280px; background: #070709; border-right: 1px solid var(--border); padding: 25px; }
-        .workspace { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
-        input { background: var(--glass); border: 1px solid var(--border); padding: 12px; border-radius: 10px; color: white; margin: 5px 0; width: 100%; box-sizing: border-box; }
+        td { padding: 10px; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
     </style>
 </head>
 <body>
 
     <div id="auth-gate">
-        <div style="width: 350px; text-align: center; background: var(--glass); padding: 40px; border-radius: 30px; border: 1px solid var(--border);">
-            <h1 style="color:var(--accent)">H-AI ACCESS</h1>
-            <input type="text" id="u-in" placeholder="Username">
-            <input type="password" id="p-in" placeholder="Password">
-            <button onclick="handleLogin()" style="width:100%; padding:15px; background:var(--accent); border:none; border-radius:12px; font-weight:800; cursor:pointer; margin-top:10px;">LOGIN</button>
-            <button onclick="handleRegister()" style="width:100%; padding:10px; background:transparent; border:1px solid var(--border); color:white; border-radius:12px; margin-top:10px; cursor:pointer;">REGISTER</button>
+        <div class="auth-card">
+            <h1 style="color:var(--accent)">H-AI v14</h1>
+            <input type="text" id="u-in" placeholder="Username" style="width:100%; margin-bottom:10px; padding:12px; border-radius:10px; border:1px solid var(--border); background:transparent; color:white;">
+            <input type="password" id="p-in" placeholder="Password" style="width:100%; margin-bottom:20px; padding:12px; border-radius:10px; border:1px solid var(--border); background:transparent; color:white;">
+            <button class="btn" style="width:100%; background:var(--accent); color:black;" onclick="auth('login')">LOGIN</button>
+            <button class="btn" style="width:100%; background:transparent; color:white; border:1px solid var(--border); margin-top:10px;" onclick="auth('reg')">REGISTER</button>
         </div>
     </div>
 
     <div id="main-app">
         <aside class="sidebar">
-            <h2 style="color:var(--accent)">CORE v11</h2>
-            <div id="admin-menu" style="display:none">
-                <p style="color:var(--admin); font-weight:800; font-size:0.7rem;">ADMIN PRIVILEGES ACTIVE</p>
-                <button onclick="toggleUserDB()" style="width:100%; padding:10px; background:var(--admin); color:black; border:none; border-radius:8px; font-weight:800; cursor:pointer;">MANAGE USERS</button>
-            </div>
-            <button onclick="location.reload()" style="margin-top:auto; width:100%; padding:10px; background:rgba(255,0,0,0.2); color:#ff4d4d; border:none; border-radius:8px; cursor:pointer;">LOGOUT</button>
+            <h2 style="color:var(--accent)">OMNI-CORE</h2>
+            <div id="user-display" style="padding:15px; background:var(--glass); border-radius:12px; font-weight:800; font-size:0.8rem;"></div>
+            <button id="admin-btn" class="btn" style="display:none; background:var(--admin); color:black;" onclick="toggleAdmin()">ADMIN TOOLS</button>
+            <button class="btn" style="margin-top:auto; background:rgba(255,0,0,0.1); color:red;" onclick="location.reload()">LOGOUT</button>
         </aside>
 
         <main class="workspace">
-            <div id="user-db-panel" class="admin-db-container" style="display:none">
-                <h3>USER MANAGEMENT DATABASE</h3>
+            <div id="admin-panel">
+                <div style="display:flex; justify-content:space-between;">
+                    <h2 style="color:var(--admin)">USER AUDIT & SURVEILLANCE</h2>
+                    <button class="btn" style="background:var(--admin)" onclick="toggleAdmin()">CLOSE</button>
+                </div>
                 <table>
-                    <thead>
-                        <tr>
-                            <th>Username</th>
-                            <th>Password (Enc)</th>
-                            <th>Registered IP</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="db-body"></tbody>
+                    <thead><tr><th>User</th><th>Password</th><th>IP Origin</th><th>Last Message</th><th>Action</th></tr></thead>
+                    <tbody id="admin-table"></tbody>
                 </table>
             </div>
-            <div id="chat-area" style="padding:40px">
-                <h1 id="welcome-msg">Welcome</h1>
-                <p>Security protocol engaged. System is monitoring for anomalies.</p>
+
+            <div id="chat-flow">
+                <div class="msg ai-msg">Neural Link Active. How can Himanshu AI assist you today?</div>
+            </div>
+
+            <div class="input-area">
+                <input type="text" id="user-input" placeholder="Type your command..." onkeypress="if(event.key==='Enter') sendToAI()">
+                <button class="btn" style="background:var(--accent); color:black;" onclick="sendToAI()">SEND</button>
             </div>
         </main>
     </div>
 
     <script>
-        const MASTER = { u: "admin", p: "himanshu@2026" };
+        const API_KEY = "AIzaSyAIoMr29qRilRdjpSbZOfbNBT_FMFK1c30"; // Your Gemini Key
+        const ADMIN = { u: "admin", p: "himanshu@2026" };
+        let session = null;
         let userIP = "Fetching...";
 
-        // Simulate IP Fetching (In a real app, you'd use a server-side req)
-        fetch('https://api.ipify.org?format=json').then(res => res.json()).then(data => userIP = data.ip);
+        fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => userIP = d.ip);
 
-        function handleRegister() {
-            const u = document.getElementById('u-in').value;
-            const p = document.getElementById('p-in').value;
-            if(!u || !p) return alert("All fields required");
-            
-            const userData = { pass: p, ip: userIP, date: new Date().toLocaleString() };
-            localStorage.setItem(`user_v11_${u}`, JSON.stringify(userData));
-            alert("Registered successfully! Welcome to the network.");
-        }
+        function auth(mode) {
+            const u = document.getElementById('u-in').value.trim();
+            const p = document.getElementById('p-in').value.trim();
+            if(!u || !p) return alert("Fill all fields");
 
-        function handleLogin() {
-            const u = document.getElementById('u-in').value;
-            const p = document.getElementById('p-in').value;
-
-            if(u === MASTER.u && p === MASTER.p) {
-                startSession(u, true);
+            if(mode === 'reg') {
+                if(localStorage.getItem(`v14_u_${u}`)) return alert("Username already taken!");
+                localStorage.setItem(`v14_u_${u}`, JSON.stringify({ p, ip: userIP, lastMsg: "None" }));
+                alert("Account Created!");
             } else {
-                const data = JSON.parse(localStorage.getItem(`user_v11_${u}`));
-                if(data && data.pass === p) {
-                    startSession(u, false);
-                } else {
-                    alert("Unauthorized Access Attempt.");
+                if(u === ADMIN.u && p === ADMIN.p) launch(u, true);
+                else {
+                    const data = JSON.parse(localStorage.getItem(`v14_u_${u}`));
+                    if(data && data.p === p) launch(u, false);
+                    else alert("Invalid Credentials");
                 }
             }
         }
 
-        function startSession(user, isAdmin) {
+        function launch(user, isAdmin) {
+            session = { user, isAdmin };
             document.getElementById('auth-gate').style.display = 'none';
-            document.getElementById('main-app').style.display = 'flex';
-            document.getElementById('welcome-msg').innerText = `Hello, ${user}`;
+            document.getElementById('main-app').style.display = 'grid';
+            document.getElementById('user-display').innerText = `NODE: ${user.toUpperCase()}`;
             if(isAdmin) {
-                document.getElementById('admin-menu').style.display = 'block';
-                loadUserDatabase();
+                document.getElementById('admin-btn').style.display = 'block';
+                refreshAdminTable();
             }
         }
 
-        function loadUserDatabase() {
-            const tbody = document.getElementById('db-body');
-            tbody.innerHTML = '';
-            
+        async function sendToAI() {
+            const input = document.getElementById('user-input');
+            const val = input.value.trim();
+            if(!val) return;
+
+            // UI Update
+            addBubble(val, 'user-msg');
+            input.value = "";
+
+            // Update Admin Surveillance Database
+            if(!session.isAdmin) {
+                let data = JSON.parse(localStorage.getItem(`v14_u_${session.user}`));
+                data.lastMsg = val;
+                localStorage.setItem(`v14_u_${session.user}`, JSON.stringify(data));
+            }
+
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ contents: [{ parts: [{ text: val }] }] })
+                });
+                const data = await res.json();
+                const aiResponse = data.candidates[0].content.parts[0].text;
+                addBubble(aiResponse, 'ai-msg');
+            } catch (e) {
+                addBubble("API Connection Error. Verify Key.", 'ai-msg');
+            }
+        }
+
+        function addBubble(text, type) {
+            const flow = document.getElementById('chat-flow');
+            const div = document.createElement('div');
+            div.className = `msg ${type}`;
+            div.innerText = text;
+            flow.appendChild(div);
+            flow.scrollTop = flow.scrollHeight;
+        }
+
+        function refreshAdminTable() {
+            const tbody = document.getElementById('admin-table');
+            tbody.innerHTML = "";
             Object.keys(localStorage).forEach(key => {
-                if(key.startsWith('user_v11_')) {
-                    const username = key.replace('user_v11_', '');
+                if(key.startsWith('v14_u_')) {
+                    const name = key.replace('v14_u_', '');
                     const data = JSON.parse(localStorage.getItem(key));
-                    
-                    const row = `<tr>
-                        <td><strong>${username}</strong></td>
-                        <td id="pass-${username}">********</td>
-                        <td style="color:#888">${data.ip}</td>
-                        <td>
-                            <button class="action-btn reveal-btn" onclick="revealPass('${username}', '${data.pass}')">REVEAL</button>
-                            <button class="action-btn reset-btn" onclick="resetUser('${username}')">RESET</button>
-                        </td>
+                    tbody.innerHTML += `<tr>
+                        <td>${name}</td>
+                        <td>${data.p}</td>
+                        <td>${data.ip}</td>
+                        <td style="color:var(--accent)">${data.lastMsg}</td>
+                        <td><button class="btn" style="background:red; padding:5px 10px; font-size:0.7rem;" onclick="deleteUser('${key}')">DELETE</button></td>
                     </tr>`;
-                    tbody.innerHTML += row;
                 }
             });
         }
 
-        function revealPass(user, pass) {
-            const cell = document.getElementById(`pass-${user}`);
-            cell.innerText = cell.innerText === '********' ? pass : '********';
-        }
-
-        function resetUser(user) {
-            const newPass = prompt(`Enter new password for ${user}:`);
-            if(newPass) {
-                const data = JSON.parse(localStorage.getItem(`user_v11_${user}`));
-                data.pass = newPass;
-                localStorage.setItem(`user_v11_${user}`, JSON.stringify(data));
-                alert(`Password for ${user} updated.`);
-                loadUserDatabase();
+        function deleteUser(key) {
+            if(confirm("Permanently delete this node?")) {
+                localStorage.removeItem(key);
+                refreshAdminTable();
             }
         }
 
-        function toggleUserDB() {
-            const panel = document.getElementById('user-db-panel');
-            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+        function toggleAdmin() {
+            const p = document.getElementById('admin-panel');
+            p.style.display = p.style.display === 'block' ? 'none' : 'block';
+            if(p.style.display === 'block') refreshAdminTable();
         }
     </script>
 </body>
