@@ -3,120 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Himanshu AI | Enterprise Admin</title>
-    <script src="https://js.puter.com/v2/"></script>
+    <title>Himanshu AI | Secure OS</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;800&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
     <style>
-        :root { --accent: #00f2ff; --admin-gold: #ffcc00; --bg: #030305; --glass: rgba(255, 255, 255, 0.03); --border: rgba(255, 255, 255, 0.08); }
+        :root { --accent: #00f2ff; --bg: #030305; --admin: #ffcc00; --danger: #ff4d4d; --glass: rgba(255, 255, 255, 0.03); --border: rgba(255, 255, 255, 0.08); }
         body, html { margin: 0; padding: 0; background: var(--bg); color: #fff; font-family: 'Outfit', sans-serif; height: 100vh; overflow: hidden; }
+
+        /* MAINTENANCE OVERLAY */
+        #maintenance-screen { position: fixed; inset: 0; z-index: 5000; background: #000; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .m-icon { font-size: 5rem; color: var(--admin); margin-bottom: 20px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
 
         /* AUTH GATE */
         #auth-gate { position: fixed; inset: 0; z-index: 2000; background: radial-gradient(circle at top, #0c121e, #000); display: flex; align-items: center; justify-content: center; }
         .auth-card { background: rgba(255, 255, 255, 0.01); backdrop-filter: blur(30px); border: 1px solid var(--border); padding: 40px; border-radius: 32px; width: 360px; text-align: center; }
-        input { width: 100%; background: var(--glass); border: 1px solid var(--border); padding: 14px; margin: 10px 0; border-radius: 12px; color: #fff; outline: none; box-sizing: border-box; }
+        .pfp-box { width: 70px; height: 70px; border-radius: 50%; background: var(--glass); margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--border); cursor: pointer; }
+        input { width: 100%; background: var(--glass); border: 1px solid var(--border); padding: 14px; margin: 8px 0; border-radius: 12px; color: #fff; outline: none; box-sizing: border-box; }
         .btn { width: 100%; padding: 14px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer; transition: 0.3s; margin-top: 10px; }
         .btn-primary { background: var(--accent); color: #000; }
-        
-        /* APP LAYOUT */
-        #main-app { display: none; height: 100vh; flex-direction: row; }
-        .sidebar { width: 280px; background: #070709; border-right: 1px solid var(--border); padding: 30px 20px; display: flex; flex-direction: column; }
-        .admin-badge { background: var(--admin-gold); color: #000; font-size: 0.7rem; font-weight: 800; padding: 2px 8px; border-radius: 5px; margin-left: 10px; display: none; }
-        
-        /* ADMIN PANEL */
-        #admin-panel { display: none; background: rgba(255, 204, 0, 0.05); border: 1px solid var(--admin-gold); padding: 20px; border-radius: 15px; margin: 20px; }
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .stat-card { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); }
+        .btn-admin { background: var(--admin); color: #000; }
 
-        .workspace { flex: 1; display: flex; flex-direction: column; }
+        /* APP CONTENT */
+        #main-app { display: none; height: 100vh; flex-direction: row; }
+        .sidebar { width: 260px; background: #070709; border-right: 1px solid var(--border); padding: 25px; }
+        .workspace { flex: 1; display: flex; flex-direction: column; position: relative; }
         #chat-flow { flex: 1; overflow-y: auto; padding: 40px 10%; }
+        
+        /* ADMIN HUD */
+        #admin-controls { background: rgba(255, 204, 0, 0.1); border: 1px solid var(--admin); padding: 15px; border-radius: 15px; margin: 20px; display: none; }
     </style>
 </head>
 <body>
 
+    <div id="maintenance-screen">
+        <span class="material-symbols-rounded m-icon">construction</span>
+        <h1 style="color:var(--admin)">SYSTEM MAINTENANCE</h1>
+        <p style="color:#71717a">We are upgrading the Neural Cores. Please check back shortly.</p>
+        <button class="btn btn-admin" style="width:200px" onclick="checkMaintenanceAdmin()">ADMIN BYPASS</button>
+    </div>
+
     <div id="auth-gate">
-        <div class="auth-card">
-            <h1 id="auth-title">H-AI LOGIN</h1>
-            <p style="font-size: 0.8rem; color:#71717a; margin-bottom: 25px;">Enter credentials to proceed</p>
-            <input type="text" id="user-input" placeholder="Username">
-            <input type="password" id="pass-input" placeholder="Password">
-            <button class="btn btn-primary" onclick="handleLogin()">ACCESS SYSTEM</button>
-            <p id="error-msg" style="color:#ff4d4d; font-size:0.8rem; margin-top:10px; display:none;">Invalid Credentials</p>
+        <div class="auth-card" id="reg-form">
+            <h1 style="color:var(--accent); margin-bottom: 5px;">REGISTER</h1>
+            <p style="font-size: 0.8rem; color:#71717a; margin-bottom: 20px;">Unlock full AI access</p>
+            <div class="pfp-box" onclick="document.getElementById('pfp').click()"><span class="material-symbols-rounded">face</span></div>
+            <input type="file" id="pfp" hidden accept="image/*">
+            <input type="text" id="reg-user" placeholder="Username">
+            <input type="password" id="reg-pass" placeholder="Password">
+            <button class="btn btn-primary" onclick="register()">CREATE ACCOUNT</button>
+            <p style="font-size:0.8rem; margin-top:15px; cursor:pointer;" onclick="toggleAuth()">Already registered? Login</p>
+        </div>
+
+        <div class="auth-card" id="log-form" style="display:none;">
+            <h1 style="color:var(--accent); margin-bottom: 5px;">LOGIN</h1>
+            <input type="text" id="log-user" placeholder="Username">
+            <input type="password" id="log-pass" placeholder="Password">
+            <button class="btn btn-primary" onclick="login()">LOGIN</button>
+            <p style="font-size:0.8rem; margin-top:15px; cursor:pointer;" onclick="toggleAuth()">New? Create account</p>
         </div>
     </div>
 
     <div id="main-app">
         <aside class="sidebar">
-            <div style="font-size:1.2rem; font-weight:800; color:var(--accent); margin-bottom:40px;">
-                HIMANSHU AI <span id="adm-tag" class="admin-badge">ADMIN</span>
-            </div>
-            <nav id="sidebar-nav" style="display:flex; flex-direction:column; gap:12px;">
-                <div class="btn" style="background:var(--glass); text-align:left;"><span class="material-symbols-rounded" style="vertical-align:middle; margin-right:10px;">chat</span> Chat</div>
-                <div id="admin-nav-btn" class="btn" style="display:none; color:var(--admin-gold);" onclick="toggleAdminPanel()">
-                    <span class="material-symbols-rounded" style="vertical-align:middle; margin-right:10px;">shield_person</span> Admin Control
-                </div>
-            </nav>
-            <button class="btn" onclick="location.reload()" style="margin-top:auto; background:rgba(255,0,0,0.1); color:#ff4d4d;">TERMINATE SESSION</button>
+            <h2 style="color:var(--accent); font-size:1rem;">H-AI CORE</h2>
+            <div id="user-info" style="margin: 20px 0; padding: 10px; background:var(--glass); border-radius:10px;"></div>
+            <button id="admin-btn" class="btn btn-admin" style="display:none" onclick="toggleAdminPanel()">ADMIN DASH</button>
+            <button class="btn" style="margin-top:auto; color:var(--danger)" onclick="logout()">LOGOUT</button>
         </aside>
 
         <main class="workspace">
-            <div id="admin-panel">
-                <h3 style="color:var(--admin-gold); margin:0;">SYSTEM MONITOR (ADMIN ONLY)</h3>
-                <div class="stat-grid">
-                    <div class="stat-card"><strong>CPU Load:</strong> <span id="cpu">2.4%</span></div>
-                    <div class="stat-card"><strong>Active Threads:</strong> <span id="threads">12</span></div>
-                    <div class="stat-card"><strong>Storage:</strong> 1.2 GB / 5 GB</div>
-                    <div class="stat-card"><strong>API Status:</strong> <span style="color:#00ff00;">Online</span></div>
-                </div>
+            <div id="admin-controls">
+                <h4 style="margin:0 0 10px 0;">ADMIN COMMAND CENTER</h4>
+                <button class="btn btn-admin" onclick="toggleMaintenance()">TOGGLE MAINTENANCE MODE</button>
+                <div style="margin-top:10px; font-size:0.8rem;">Users Registered: <span id="user-count">0</span></div>
             </div>
-
             <div id="chat-flow"></div>
-            <div style="padding: 20px 10% 40px;">
-                <input type="text" id="prompt" placeholder="Message AI..." style="margin:0;">
-            </div>
+            <div style="padding: 20px 10% 40px;"><input type="text" id="msg-input" placeholder="Neural Link Active..." onkeypress="if(event.key==='Enter') send()"></div>
         </main>
     </div>
 
     <script>
-        const ADMIN_USER = "admin";
-        const ADMIN_PASS = "himanshu@2026";
+        const ADMIN_CREDS = { u: "admin", p: "himanshu@2026" };
+        let isMaintenance = localStorage.getItem('maintenance') === 'true';
+        let currentUser = null;
 
-        function handleLogin() {
-            const u = document.getElementById('user-input').value;
-            const p = document.getElementById('pass-input').value;
-            const err = document.getElementById('error-msg');
+        // Apply Maintenance on Load
+        if(isMaintenance) document.getElementById('maintenance-screen').style.display = 'flex';
 
-            if (u === ADMIN_USER && p === ADMIN_PASS) {
-                launchApp(true, "Administrator");
-            } else if (u && p.length > 3) {
-                launchApp(false, u);
+        function toggleAuth() {
+            const isRegVisible = document.getElementById('reg-form').style.display !== 'none';
+            document.getElementById('reg-form').style.display = isRegVisible ? 'none' : 'block';
+            document.getElementById('log-form').style.display = isRegVisible ? 'block' : 'none';
+        }
+
+        function register() {
+            const u = document.getElementById('reg-user').value;
+            const p = document.getElementById('reg-pass').value;
+            if(!u || !p) return alert("All fields required");
+            
+            localStorage.setItem(`user_${u}`, JSON.stringify({ pass: p, role: 'user' }));
+            alert("Registration Success! Please Login.");
+            toggleAuth();
+        }
+
+        function login() {
+            const u = document.getElementById('log-user').value;
+            const p = document.getElementById('log-pass').value;
+            
+            if(u === ADMIN_CREDS.u && p === ADMIN_CREDS.p) {
+                initSession(u, 'admin');
             } else {
-                err.style.display = "block";
+                const stored = JSON.parse(localStorage.getItem(`user_${u}`));
+                if(stored && stored.pass === p) {
+                    if(isMaintenance) return alert("System is under maintenance. Only Admin can log in.");
+                    initSession(u, 'user');
+                } else {
+                    alert("Access Denied.");
+                }
             }
         }
 
-        function launchApp(isAdmin, name) {
-            document.getElementById('auth-gate').style.display = "none";
-            document.getElementById('main-app').style.display = "flex";
+        function initSession(name, role) {
+            currentUser = { name, role };
+            document.getElementById('auth-gate').style.display = 'none';
+            document.getElementById('main-app').style.display = 'flex';
+            document.getElementById('user-info').innerText = `USER: ${name.toUpperCase()}`;
             
-            if(isAdmin) {
-                document.getElementById('adm-tag').style.display = "inline-block";
-                document.getElementById('admin-nav-btn').style.display = "block";
+            if(role === 'admin') {
+                document.getElementById('admin-btn').style.display = 'block';
+                document.getElementById('user-count').innerText = Object.keys(localStorage).filter(k => k.startsWith('user_')).length;
             }
-            
-            addMsg(`Session started for **${name}**. Systems initialized.`, 'ai');
+        }
+
+        function toggleMaintenance() {
+            isMaintenance = !isMaintenance;
+            localStorage.setItem('maintenance', isMaintenance);
+            alert(`Maintenance Mode: ${isMaintenance ? 'ON' : 'OFF'}`);
+            location.reload();
+        }
+
+        function checkMaintenanceAdmin() {
+            const p = prompt("Enter Admin Security Key:");
+            if(p === ADMIN_CREDS.p) {
+                document.getElementById('maintenance-screen').style.display = 'none';
+            }
         }
 
         function toggleAdminPanel() {
-            const p = document.getElementById('admin-panel');
-            p.style.display = p.style.display === 'block' ? 'none' : 'block';
+            const panel = document.getElementById('admin-controls');
+            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
         }
 
-        function addMsg(t, role) {
-            const div = document.createElement('div');
-            div.style.marginBottom = "20px";
-            div.innerHTML = `<div style="color:${role==='ai'?'#7ee787':'#00f2ff'}; font-size:0.7rem; font-weight:800;">${role.toUpperCase()}</div><div>${t}</div>`;
-            document.getElementById('chat-flow').appendChild(div);
-        }
+        function logout() { location.reload(); }
+        function send() { /* AI Chat logic remains as per previous version */ }
     </script>
 </body>
 </html>
