@@ -3,89 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Himanshu AI | Omni-Core v14</title>
+    <title>Himanshu AI | Neural Core v15</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;800&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
     <style>
         :root { --accent: #00f2ff; --admin: #ffcc00; --bg: #030305; --glass: rgba(255, 255, 255, 0.05); --border: rgba(255, 255, 255, 0.1); }
-        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Outfit', sans-serif; overflow: hidden; height: 100vh; }
-        
-        /* AUTHENTICATION */
-        #auth-gate { position: fixed; inset: 0; z-index: 5000; background: #000; display: flex; align-items: center; justify-content: center; }
-        .auth-card { width: 380px; background: var(--glass); backdrop-filter: blur(20px); padding: 40px; border-radius: 30px; border: 1px solid var(--border); text-align: center; }
+        body, html { margin: 0; padding: 0; background: var(--bg); color: #fff; font-family: 'Outfit', sans-serif; height: 100vh; overflow: hidden; }
 
-        /* LAYOUT */
-        #main-app { display: none; height: 100vh; grid-template-columns: 280px 1fr; }
-        .sidebar { background: #070709; border-right: 1px solid var(--border); padding: 25px; display: flex; flex-direction: column; gap: 10px; }
-        .workspace { display: flex; flex-direction: column; background: var(--bg); position: relative; }
+        /* AUTH GALAXY */
+        #auth-gate { position: fixed; inset: 0; z-index: 5000; background: radial-gradient(circle at top, #0c121e, #000); display: flex; align-items: center; justify-content: center; }
+        .auth-card { width: 380px; background: var(--glass); backdrop-filter: blur(20px); padding: 40px; border-radius: 30px; border: 1px solid var(--border); text-align: center; box-shadow: 0 40px 100px rgba(0,0,0,0.8); }
 
-        /* CHAT BUBBLES */
-        #chat-flow { flex: 1; overflow-y: auto; padding: 40px 10%; display: flex; flex-direction: column; gap: 20px; }
-        .msg { padding: 15px 20px; border-radius: 18px; max-width: 80%; line-height: 1.5; }
-        .user-msg { align-self: flex-end; background: var(--accent); color: #000; font-weight: 600; }
+        /* MAIN APP */
+        #main-app { display: none; height: 100vh; flex-direction: row; }
+        .sidebar { width: 280px; background: #070709; border-right: 1px solid var(--border); padding: 25px; display: flex; flex-direction: column; }
+        .workspace { flex: 1; display: flex; flex-direction: column; background: #030305; position: relative; }
+
+        /* CHAT INTERFACE */
+        #chat-flow { flex: 1; overflow-y: auto; padding: 50px 15%; display: flex; flex-direction: column; gap: 25px; scroll-behavior: smooth; }
+        .msg { max-width: 80%; padding: 18px 24px; border-radius: 22px; line-height: 1.6; font-size: 1rem; position: relative; }
+        .user-msg { align-self: flex-end; background: var(--accent); color: #000; font-weight: 600; box-shadow: 0 10px 30px rgba(0, 242, 255, 0.2); }
         .ai-msg { align-self: flex-start; background: var(--glass); border: 1px solid var(--border); }
 
-        /* ADMIN OVERLAY */
-        #admin-panel { 
-            position: absolute; inset: 20px; background: rgba(5, 5, 5, 0.98); 
-            border: 1px solid var(--admin); border-radius: 20px; z-index: 1000; 
-            display: none; padding: 30px; overflow-y: auto;
-        }
-
-        .btn { padding: 12px 20px; border-radius: 10px; border: none; font-weight: 800; cursor: pointer; }
-        .input-area { padding: 20px 10%; background: #0a0a0c; display: flex; gap: 15px; }
-        input { flex: 1; background: var(--glass); border: 1px solid var(--border); padding: 15px; border-radius: 12px; color: white; outline: none; }
+        /* ADMIN CONTROL */
+        #admin-panel { position: absolute; inset: 20px; background: rgba(5, 5, 5, 0.98); border: 1px solid var(--admin); border-radius: 25px; z-index: 1000; display: none; padding: 30px; overflow-y: auto; }
+        
+        /* UI COMPONENTS */
+        input { width: 100%; background: var(--glass); border: 1px solid var(--border); padding: 15px; border-radius: 12px; color: white; outline: none; margin-bottom: 10px; }
+        .btn { padding: 12px 20px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer; transition: 0.3s; }
+        .btn-accent { background: var(--accent); color: #000; }
+        .input-area { padding: 30px 15%; background: linear-gradient(to top, #000, transparent); display: flex; gap: 15px; }
         
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { text-align: left; color: var(--admin); border-bottom: 1px solid var(--admin); padding: 10px; }
-        td { padding: 10px; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+        th { text-align: left; color: var(--admin); border-bottom: 1px solid var(--admin); padding: 12px; }
+        td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
     </style>
 </head>
 <body>
 
     <div id="auth-gate">
         <div class="auth-card">
-            <h1 style="color:var(--accent)">H-AI v14</h1>
-            <input type="text" id="u-in" placeholder="Username" style="width:100%; margin-bottom:10px; padding:12px; border-radius:10px; border:1px solid var(--border); background:transparent; color:white;">
-            <input type="password" id="p-in" placeholder="Password" style="width:100%; margin-bottom:20px; padding:12px; border-radius:10px; border:1px solid var(--border); background:transparent; color:white;">
-            <button class="btn" style="width:100%; background:var(--accent); color:black;" onclick="auth('login')">LOGIN</button>
+            <h1 style="color:var(--accent); margin-bottom: 5px;">NEURAL CORE</h1>
+            <p style="color:#666; margin-bottom: 30px;">Himanshu AI Evolution v15</p>
+            <input type="text" id="u-in" placeholder="Username">
+            <input type="password" id="p-in" placeholder="Password">
+            <button class="btn btn-accent" style="width:100%;" onclick="auth('login')">LOGIN</button>
             <button class="btn" style="width:100%; background:transparent; color:white; border:1px solid var(--border); margin-top:10px;" onclick="auth('reg')">REGISTER</button>
         </div>
     </div>
 
     <div id="main-app">
         <aside class="sidebar">
-            <h2 style="color:var(--accent)">OMNI-CORE</h2>
-            <div id="user-display" style="padding:15px; background:var(--glass); border-radius:12px; font-weight:800; font-size:0.8rem;"></div>
-            <button id="admin-btn" class="btn" style="display:none; background:var(--admin); color:black;" onclick="toggleAdmin()">ADMIN TOOLS</button>
-            <button class="btn" style="margin-top:auto; background:rgba(255,0,0,0.1); color:red;" onclick="location.reload()">LOGOUT</button>
+            <h2 style="color:var(--accent); font-size: 1.1rem; letter-spacing: 2px;">SYSTEM HUB</h2>
+            <div id="user-info" style="margin: 20px 0; padding: 15px; background:var(--glass); border-radius:15px; font-weight:800; font-size:0.8rem;"></div>
+            
+            <button id="admin-trigger" class="btn" style="display:none; background:var(--admin); color:black; margin-bottom:10px;" onclick="toggleAdmin()">ADMIN PANEL</button>
+            <button class="btn" style="margin-top:auto; background:rgba(255,0,0,0.1); color:#ff4d4d;" onclick="location.reload()">TERMINATE</button>
         </aside>
 
         <main class="workspace">
             <div id="admin-panel">
-                <div style="display:flex; justify-content:space-between;">
-                    <h2 style="color:var(--admin)">USER AUDIT & SURVEILLANCE</h2>
+                <div style="display:flex; justify-content:space-between; align-items: center;">
+                    <h2 style="color:var(--admin); margin:0;">USER SURVEILLANCE</h2>
                     <button class="btn" style="background:var(--admin)" onclick="toggleAdmin()">CLOSE</button>
                 </div>
                 <table>
-                    <thead><tr><th>User</th><th>Password</th><th>IP Origin</th><th>Last Message</th><th>Action</th></tr></thead>
+                    <thead><tr><th>User</th><th>Password</th><th>IP Origin</th><th>Status</th><th>Action</th></tr></thead>
                     <tbody id="admin-table"></tbody>
                 </table>
             </div>
 
             <div id="chat-flow">
-                <div class="msg ai-msg">Neural Link Active. How can Himanshu AI assist you today?</div>
+                <div class="msg ai-msg">Neural Core online. I am the AI bro, standing by for instructions.</div>
             </div>
 
             <div class="input-area">
-                <input type="text" id="user-input" placeholder="Type your command..." onkeypress="if(event.key==='Enter') sendToAI()">
-                <button class="btn" style="background:var(--accent); color:black;" onclick="sendToAI()">SEND</button>
+                <input type="text" id="chat-input" placeholder="Enter query..." onkeypress="if(event.key==='Enter') triggerAI()">
+                <button class="btn btn-accent" onclick="triggerAI()">SEND</button>
             </div>
         </main>
     </div>
 
     <script>
-        const API_KEY = "AIzaSyAIoMr29qRilRdjpSbZOfbNBT_FMFK1c30"; // Your Gemini Key
-        const ADMIN = { u: "admin", p: "himanshu@2026" };
+        const API_KEY = "AIzaSyAIoMr29qRilRdjpSbZOfbNBT_FMFK1c30";
+        const ADMIN_CREDS = { u: "admin", p: "himanshu@2026" };
         let session = null;
         let userIP = "Fetching...";
 
@@ -94,18 +94,18 @@
         function auth(mode) {
             const u = document.getElementById('u-in').value.trim();
             const p = document.getElementById('p-in').value.trim();
-            if(!u || !p) return alert("Fill all fields");
+            if(!u || !p) return alert("All fields required");
 
             if(mode === 'reg') {
-                if(localStorage.getItem(`v14_u_${u}`)) return alert("Username already taken!");
-                localStorage.setItem(`v14_u_${u}`, JSON.stringify({ p, ip: userIP, lastMsg: "None" }));
-                alert("Account Created!");
+                if(localStorage.getItem(`v15_user_${u}`)) return alert("Username already registered!");
+                localStorage.setItem(`v15_user_${u}`, JSON.stringify({ p, ip: userIP, active: true }));
+                alert("Neural Signature Saved!");
             } else {
-                if(u === ADMIN.u && p === ADMIN.p) launch(u, true);
+                if(u === ADMIN_CREDS.u && p === ADMIN_CREDS.p) launch(u, true);
                 else {
-                    const data = JSON.parse(localStorage.getItem(`v14_u_${u}`));
+                    const data = JSON.parse(localStorage.getItem(`v15_user_${u}`));
                     if(data && data.p === p) launch(u, false);
-                    else alert("Invalid Credentials");
+                    else alert("Access Denied: Credentials Mismatch");
                 }
             }
         }
@@ -113,29 +113,23 @@
         function launch(user, isAdmin) {
             session = { user, isAdmin };
             document.getElementById('auth-gate').style.display = 'none';
-            document.getElementById('main-app').style.display = 'grid';
-            document.getElementById('user-display').innerText = `NODE: ${user.toUpperCase()}`;
+            document.getElementById('main-app').style.display = 'flex';
+            document.getElementById('user-info').innerText = `USER: ${user.toUpperCase()}`;
             if(isAdmin) {
-                document.getElementById('admin-btn').style.display = 'block';
-                refreshAdminTable();
+                document.getElementById('admin-trigger').style.display = 'block';
+                loadAdminTable();
             }
         }
 
-        async function sendToAI() {
-            const input = document.getElementById('user-input');
+        async function triggerAI() {
+            const input = document.getElementById('chat-input');
             const val = input.value.trim();
             if(!val) return;
 
-            // UI Update
-            addBubble(val, 'user-msg');
+            addMsg(val, 'user-msg');
             input.value = "";
-
-            // Update Admin Surveillance Database
-            if(!session.isAdmin) {
-                let data = JSON.parse(localStorage.getItem(`v14_u_${session.user}`));
-                data.lastMsg = val;
-                localStorage.setItem(`v14_u_${session.user}`, JSON.stringify(data));
-            }
+            
+            const typingDiv = addMsg("AI is thinking...", 'ai-msg');
 
             try {
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
@@ -144,51 +138,52 @@
                     body: JSON.stringify({ contents: [{ parts: [{ text: val }] }] })
                 });
                 const data = await res.json();
-                const aiResponse = data.candidates[0].content.parts[0].text;
-                addBubble(aiResponse, 'ai-msg');
+                const aiText = data.candidates[0].content.parts[0].text;
+                typingDiv.innerText = aiText;
             } catch (e) {
-                addBubble("API Connection Error. Verify Key.", 'ai-msg');
+                typingDiv.innerText = "Error: Neural Core API unreachable.";
             }
         }
 
-        function addBubble(text, type) {
+        function addMsg(text, type) {
             const flow = document.getElementById('chat-flow');
             const div = document.createElement('div');
             div.className = `msg ${type}`;
             div.innerText = text;
             flow.appendChild(div);
             flow.scrollTop = flow.scrollHeight;
+            return div;
         }
 
-        function refreshAdminTable() {
+        function loadAdminTable() {
             const tbody = document.getElementById('admin-table');
             tbody.innerHTML = "";
             Object.keys(localStorage).forEach(key => {
-                if(key.startsWith('v14_u_')) {
-                    const name = key.replace('v14_u_', '');
-                    const data = JSON.parse(localStorage.getItem(key));
+                if(key.startsWith('v15_user_')) {
+                    const u = key.replace('v15_user_', '');
+                    const d = JSON.parse(localStorage.getItem(key));
                     tbody.innerHTML += `<tr>
-                        <td>${name}</td>
-                        <td>${data.p}</td>
-                        <td>${data.ip}</td>
-                        <td style="color:var(--accent)">${data.lastMsg}</td>
-                        <td><button class="btn" style="background:red; padding:5px 10px; font-size:0.7rem;" onclick="deleteUser('${key}')">DELETE</button></td>
+                        <td>${u}</td>
+                        <td><code>${d.p}</code></td>
+                        <td>${d.ip}</td>
+                        <td style="color:#00ff00;">ONLINE</td>
+                        <td><button class="btn" style="background:red; color:white; padding:5px 10px; font-size:0.7rem;" onclick="deleteNode('${key}')">DELETE</button></td>
                     </tr>`;
                 }
             });
         }
 
-        function deleteUser(key) {
-            if(confirm("Permanently delete this node?")) {
+        function deleteNode(key) {
+            if(confirm("Confirm deletion of user node?")) {
                 localStorage.removeItem(key);
-                refreshAdminTable();
+                loadAdminTable();
             }
         }
 
         function toggleAdmin() {
             const p = document.getElementById('admin-panel');
             p.style.display = p.style.display === 'block' ? 'none' : 'block';
-            if(p.style.display === 'block') refreshAdminTable();
+            if(p.style.display === 'block') loadAdminTable();
         }
     </script>
 </body>
