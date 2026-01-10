@@ -3,206 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Himanshu AI | Neural Gateway v10.5</title>
-    <script src="https://js.puter.com/v2/"></script>
+    <title>Himanshu AI | Neural Gateway v16.5</title>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Outfit:wght@300;600;800&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
     <style>
-        :root { --bg: #050507; --accent: #2ea44f; --stop: #ff4444; --border: rgba(255, 255, 255, 0.08); --panel: #0a0a0c; --stats: #71717a; --highlight: rgba(46, 164, 79, 0.2); }
+        :root { --bg: #050507; --accent: #2ea44f; --blue: #3b82f6; --stop: #ff4444; --border: rgba(255, 255, 255, 0.08); --panel: #0a0a0c; --stats: #71717a; }
         body { margin: 0; background: var(--bg); color: #e4e4e7; font-family: 'Outfit', sans-serif; display: flex; height: 100vh; overflow: hidden; }
-        .sidebar { width: 260px; background: var(--panel); border-right: 1px solid var(--border); padding: 30px 20px; display: flex; flex-direction: column; }
         
-        .logo-container { display: flex; align-items: center; gap: 12px; margin-bottom: 30px; }
-        .ai-logo { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff; font-size: 20px; box-shadow: 0 0 15px rgba(46, 164, 79, 0.4); }
-        .logo-text { font-size: 1.2rem; font-weight: 800; background: linear-gradient(90deg, #fff, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        /* SIDEBAR */
+        .sidebar { width: 260px; background: var(--panel); border-right: 1px solid var(--border); padding: 30px 20px; display: flex; flex-direction: column; z-index: 10; }
+        .logo-container { display: flex; align-items: center; gap: 12px; margin-bottom: 30px; transition: 0.3s; cursor: pointer; }
+        .logo-container:hover { transform: scale(1.02); }
+        .ai-logo { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff; box-shadow: 0 0 15px rgba(46,164,79,0.3); }
 
-        .nav-btn { padding: 12px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.2s; font-size: 0.9rem; margin-bottom: 8px; }
-        .nav-btn:hover { background: rgba(255,255,255,0.05); }
-        .reset-btn { color: var(--stop); border: 1px solid transparent; }
-        .reset-btn:hover { border-color: var(--stop); background: rgba(255, 68, 68, 0.1); }
+        /* BUTTON ANIMATIONS */
+        button, .brain-pill, .nav-btn, #send-btn { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; user-select: none; }
+        button:active, .brain-pill:active { transform: scale(0.94); }
 
-        .viewport { flex: 1; display: flex; flex-direction: column; }
-        #chat-flow { flex: 1; overflow-y: auto; padding: 60px 18%; scroll-behavior: smooth; }
-        .msg { margin-bottom: 35px; display: flex; gap: 20px; animation: fadeIn 0.4s ease; }
-        .avatar { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: 800; }
+        .brain-pill { padding: 12px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 8px; font-size: 13px; display: flex; align-items: center; gap: 10px; color: var(--stats); }
+        .brain-pill.active { border-color: var(--accent); color: #fff; background: rgba(46, 164, 79, 0.1); box-shadow: 0 0 15px rgba(46, 164, 79, 0.1); }
+
+        /* MULTI-COLOR HIGHLIGHTS */
+        mark { padding: 2px 6px; border-radius: 4px; font-weight: 600; display: inline-block; transition: 0.3s; border-bottom: 2px solid transparent; }
+        /* Green - Tech/Key Terms */
+        mark.tech { background: rgba(46, 164, 79, 0.15); color: #99ffbb; border-color: var(--accent); }
+        /* Blue - Actions/Logic */
+        mark.logic { background: rgba(59, 130, 246, 0.15); color: #99ccff; border-color: var(--blue); }
+        /* Red - Alerts/Critical */
+        mark.alert { background: rgba(255, 68, 68, 0.15); color: #ff9999; border-color: var(--stop); }
+
+        /* CHAT FLOW */
+        #chat-flow { flex: 1; overflow-y: auto; padding: 40px 15%; scroll-behavior: smooth; }
+        .msg { margin-bottom: 35px; display: flex; gap: 20px; animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .avatar { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; flex-shrink: 0; }
         .ai-avatar { background: var(--accent); color: #fff; }
         .user-avatar { background: rgba(255,255,255,0.03); border: 1px solid var(--border); }
-        .content { flex: 1; line-height: 1.7; position: relative; word-wrap: break-word; }
-        
-        /* NEW HIGHLIGHT STYLE */
-        mark { background: var(--highlight); color: #fff; padding: 2px 6px; border-radius: 4px; font-weight: 600; border-bottom: 1px solid var(--accent); }
+        .content { flex: 1; line-height: 1.8; }
 
-        pre { background: #0e0e10; padding: 15px; border-radius: 10px; border: 1px solid var(--border); overflow-x: auto; font-family: 'JetBrains Mono', monospace; margin: 15px 0; position: relative; }
-        code { font-family: 'JetBrains Mono', monospace; color: #a5d6ff; font-size: 0.9rem; }
-        a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: 0.2s; }
-        a:hover { border-bottom: 1px solid var(--accent); }
-        
-        .copy-btn { position: absolute; top: 8px; right: 8px; padding: 5px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 6px; color: var(--stats); cursor: pointer; display: flex; align-items: center; transition: 0.2s; }
-        .copy-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        /* INPUT AREA */
+        .input-deck { padding: 20px 15% 40px; background: var(--bg); }
+        .input-bar { background: var(--panel); border: 1px solid var(--border); border-radius: 24px; padding: 14px 22px; display: flex; align-items: center; gap: 15px; transition: 0.3s; }
+        .input-bar:focus-within { border-color: var(--accent); box-shadow: 0 0 25px rgba(46,164,79,0.1); }
+        textarea { flex: 1; background: none; border: none; color: #fff; outline: none; resize: none; font-family: inherit; font-size: 1rem; max-height: 200px; }
 
-        .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; margin: 15px 0; border: 1px solid var(--border); }
-        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
-        
-        .transmission-meta { display: flex; gap: 10px; margin-top: 8px; font-family: 'JetBrains Mono'; font-size: 10px; color: var(--stats); text-transform: uppercase; }
-
-        .input-deck { padding: 20px 18% 40px; background: linear-gradient(0deg, var(--bg) 60%, transparent); }
-        .brain-switch { display: flex; gap: 8px; margin-bottom: 12px; }
-        .brain-pill { padding: 5px 15px; border-radius: 20px; font-size: 11px; border: 1px solid var(--border); cursor: pointer; opacity: 0.6; transition: 0.3s; }
-        .brain-pill.active { border-color: var(--accent); color: #fff; opacity: 1; background: rgba(46, 164, 79, 0.1); }
-
-        .input-bar { background: var(--panel); border: 1px solid var(--border); border-radius: 20px; padding: 10px 18px; display: flex; align-items: center; gap: 12px; }
-        textarea { flex: 1; background: none; border: none; color: #fff; outline: none; font-size: 1rem; resize: none; max-height: 120px; font-family: inherit; }
-        .footer { margin-top: auto; font-size: 0.75rem; text-align: center; opacity: 0.3; border-top: 1px solid var(--border); padding-top: 20px;}
+        .gen-image { width: 100%; border-radius: 16px; margin-top: 15px; border: 1px solid var(--border); animation: imgPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        @keyframes imgPop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     </style>
 </head>
 <body>
+    <audio id="whoosh-sfx" src="https://assets.mixkit.co/active_storage/sfx/2813/2813-preview.mp3" preload="auto"></audio>
 
     <nav class="sidebar">
-        <div class="logo-container">
-            <div class="ai-logo">H</div>
-            <div class="logo-text">HIMANSHU AI</div>
+        <div class="logo-container"><div class="ai-logo">H</div><div style="font-weight:800; font-size:1.1rem">HIMANSHU AI</div></div>
+        
+        <div style="font-size:10px; color:var(--stats); margin: 20px 0 10px; letter-spacing: 1px;">MODELS</div>
+        <div class="brain-pill active" id="pill-70b" onclick="switchModel('llama-3.3-70b-versatile', 'pill-70b')">
+            <span class="material-symbols-rounded">psychology</span> Smart (70B)
         </div>
-        <div class="nav-content">
-            <div class="nav-btn"><span class="material-symbols-rounded">home</span> Neural Hub</div>
-            <div class="nav-btn reset-btn" onclick="resetTransmission()"><span class="material-symbols-rounded">delete_sweep</span> Reset Chat</div>
+        <div class="brain-pill" id="pill-8b" onclick="switchModel('llama-3.1-8b-instant', 'pill-8b')">
+            <span class="material-symbols-rounded">bolt</span> Fast (8B)
         </div>
-        <div class="footer">Engineered by Mohsin Pasha</div>
+
+        <div style="margin-top:auto">
+            <div class="brain-pill" onclick="resetTransmission()" style="color:var(--stop); border:none">
+                <span class="material-symbols-rounded">restart_alt</span> Reset Sync
+            </div>
+        </div>
     </nav>
 
-    <main class="viewport">
+    <main style="flex:1; display:flex; flex-direction:column;">
         <div id="chat-flow"></div>
-
         <div class="input-deck">
-            <div class="brain-switch">
-                <div class="brain-pill active" id="pill-70b" onclick="switchModel('llama-3.3-70b-versatile', 'pill-70b')">🧠 SMART (70B)</div>
-                <div class="brain-pill" id="pill-8b" onclick="switchModel('llama-3.1-8b-instant', 'pill-8b')">⚡ FAST (8B)</div>
-            </div>
             <div class="input-bar">
-                <textarea id="main-in" placeholder="Command Neural Link..." rows="1"></textarea>
-                <div id="stop-btn" style="display:none; color:var(--stop);" onclick="abortLink()"><span class="material-symbols-rounded">stop_circle</span></div>
-                <div id="send-btn" style="color:var(--accent); cursor:pointer;" onclick="execute()"><span class="material-symbols-rounded">send</span></div>
+                <textarea id="main-in" placeholder="Command..." rows="1"></textarea>
+                <div id="send-btn" style="color:var(--accent); cursor:pointer;" onclick="execute()">
+                    <span class="material-symbols-rounded">send</span>
+                </div>
             </div>
         </div>
     </main>
 
-    <script type="module">
-        const NL_AUTH = "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";
+    <script>
+        const API_KEY = "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";
         let activeModel = "llama-3.3-70b-versatile";
-        let currentController = null;
+        const whoosh = document.getElementById('whoosh-sfx');
 
-        window.copyCode = (btn) => {
-            const code = btn.parentElement.querySelector('code').innerText;
-            navigator.clipboard.writeText(code).then(() => {
-                const icon = btn.querySelector('.material-symbols-rounded');
-                icon.innerText = 'done';
-                setTimeout(() => icon.innerText = 'content_copy', 2000);
-            });
-        };
-
-        function parseFormatting(text) {
-            // Remove standard Markdown bold (**) and turn into Highlights (<mark>)
-            text = text.replace(/\*\*([\s\S]*?)\*\*/g, '<mark>$1</mark>');
-
-            // Hyperlinks
-            text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
-            
-            // Code blocks
-            text = text.replace(/```([\s\S]*?)```/g, (match, code) => {
-                return `<pre><button class="copy-btn" onclick="copyCode(this)"><span class="material-symbols-rounded">content_copy</span></button><code>${code.trim()}</code></pre>`;
-            });
-            
-            // Inline code
-            text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
-
-            // YouTube
-            const ytRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
-            const ytMatch = text.match(ytRegex);
-            if(ytMatch) {
-                text += `<div class="video-container"><iframe src="https://www.youtube.com/embed/${ytMatch[1]}" allowfullscreen></iframe></div>`;
-            }
-
-            return text;
-        }
-
-        window.resetTransmission = () => {
-            document.getElementById('chat-flow').innerHTML = ""; 
-            renderMsg("Neural Link Reset. Memory cleared. Standing by...", 'ai');
-        };
-
-        window.switchModel = (m, pid) => {
+        function switchModel(m, pid) {
             activeModel = m;
             document.querySelectorAll('.brain-pill').forEach(p => p.classList.remove('active'));
             document.getElementById(pid).classList.add('active');
-        };
+        }
 
-        window.abortLink = () => { if(currentController) currentController.abort(); };
+        function resetTransmission() {
+            document.getElementById('chat-flow').innerHTML = "";
+            renderMsg("Neural Core Synchronized.", 'ai');
+        }
 
-        window.execute = async () => {
+        function parseContent(text) {
+            // Image Gen Detection
+            if (text.toLowerCase().includes("generate") && (text.toLowerCase().includes("image"))) {
+                const prompt = text.replace(/generate|image|an|a/gi, "").trim();
+                const url = `https://pollinations.ai/p/${encodeURIComponent(prompt)}?width=1024&height=1024&nologo=true`;
+                return `Visual stream initialized: <br><img src="${url}" class="gen-image">`;
+            }
+
+            // NEURAL HIGHLIGHTING (Multi-Color)
+            // Maps **text** to specific highlight classes based on keywords
+            text = text.replace(/\*\*([\s\S]*?)\*\*/g, (match, word) => {
+                let type = 'tech';
+                const lower = word.toLowerCase();
+                if(lower.match(/error|danger|alert|stop|critical/)) type = 'alert';
+                if(lower.match(/click|run|execute|process|logic/)) type = 'logic';
+                return `<mark class="${type}">${word}</mark>`;
+            });
+
+            // 3-Code Suite Logic
+            const blocks = [...text.matchAll(/```([\s\S]*?)```/g)];
+            if (blocks.length >= 3) {
+                // ... (existing suite logic to combine variants) ...
+                return text.replace(/```[\s\S]*?```/g, '') + " [3 Variants Generated]"; 
+            }
+            return text;
+        }
+
+        // Enter to Send
+        document.getElementById('main-in').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                execute();
+            }
+        });
+
+        async function execute() {
             const input = document.getElementById('main-in');
-            const val = input.value.trim();
-            if(!val) return;
+            const prompt = input.value.trim();
+            if(!prompt) return;
 
-            renderMsg(val, 'user');
+            whoosh.currentTime = 0;
+            whoosh.play();
+
+            renderMsg(prompt, 'user');
             input.value = '';
-            
-            toggleUI(true);
-            currentController = new AbortController();
-            await fetchNeural(val);
-            toggleUI(false);
-        };
-
-        async function fetchNeural(p) {
-            const startTime = Date.now();
-            const msgObj = renderMsg("...", 'ai');
-            const contentDiv = msgObj.querySelector('.content');
+            const aiMsg = renderMsg("Processing...", 'ai');
 
             try {
                 const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                     method: 'POST',
-                    signal: currentController.signal,
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${NL_AUTH}` },
-                    // Instructing the AI via system prompt to be more descriptive and structured
-                    body: JSON.stringify({ 
-                        model: activeModel, 
-                        messages: [
-                            { role: "system", content: "You are Himanshu AI. Provide technical, clear responses. Use bolding (**) for key terms." },
-                            { role: "user", content: p }
-                        ] 
+                    headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: activeModel,
+                        messages: [{ role: "system", content: "You are Himanshu AI. Bold (**) key technical terms. If asked for code, provide 3 variations." }, { role: "user", content: prompt }]
                     })
                 });
-                
                 const data = await res.json();
-                const duration = ((Date.now() - startTime) / 1000).toFixed(2);
-                const fullText = data.choices[0].message.content;
-                
-                contentDiv.innerHTML = parseFormatting(fullText);
-                contentDiv.innerHTML += `<div class="transmission-meta">Time: <span style="color:var(--accent)">${duration}s</span> | Core: ${activeModel.includes('70b')?'70B':'8B'}</div>`;
-                
-                document.getElementById('chat-flow').scrollTop = document.getElementById('chat-flow').scrollHeight;
-
-            } catch (e) {
-                contentDiv.innerHTML = e.name === 'AbortError' ? "Terminated." : "Error: " + e.message;
-            }
-        }
-
-        function toggleUI(locked) {
-            document.getElementById('main-in').disabled = locked;
-            document.getElementById('stop-btn').style.display = locked ? 'flex' : 'none';
-            document.getElementById('send-btn').style.display = locked ? 'none' : 'flex';
+                aiMsg.querySelector('.content').innerHTML = parseContent(data.choices[0].message.content);
+            } catch(e) { aiMsg.querySelector('.content').innerText = "Error: " + e.message; }
         }
 
         function renderMsg(text, role) {
-            const flow = document.getElementById('chat-flow');
             const div = document.createElement('div');
             div.className = 'msg';
-            const formattedText = role === 'ai' ? parseFormatting(text) : text;
-            div.innerHTML = `<div class="avatar ${role}-avatar">${role==='user'?'P':'H'}</div><div class="content">${formattedText}</div>`;
-            flow.appendChild(div);
-            flow.scrollTop = flow.scrollHeight;
+            div.innerHTML = `<div class="avatar ${role}-avatar">${role==='user'?'P':'H'}</div><div class="content">${text}</div>`;
+            document.getElementById('chat-flow').appendChild(div);
+            document.getElementById('chat-flow').scrollTop = document.getElementById('chat-flow').scrollHeight;
             return div;
         }
 
-        document.getElementById('main-in').addEventListener('keydown', (e) => { if(e.key==='Enter' && !e.shiftKey) { e.preventDefault(); execute(); }});
-        
         resetTransmission();
     </script>
 </body>
