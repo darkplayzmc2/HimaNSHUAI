@@ -15,21 +15,11 @@
         .logo-container:hover { transform: scale(1.02); }
         .ai-logo { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff; box-shadow: 0 0 15px rgba(46,164,79,0.3); }
 
-        /* BUTTON ANIMATIONS */
-        button, .brain-pill, .nav-btn, #send-btn { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; user-select: none; }
-        button:active, .brain-pill:active { transform: scale(0.94); }
-
-        .brain-pill { padding: 12px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 8px; font-size: 13px; display: flex; align-items: center; gap: 10px; color: var(--stats); }
-        .brain-pill.active { border-color: var(--accent); color: #fff; background: rgba(46, 164, 79, 0.1); box-shadow: 0 0 15px rgba(46, 164, 79, 0.1); }
-
-        /* MULTI-COLOR HIGHLIGHTS */
-        mark { padding: 2px 6px; border-radius: 4px; font-weight: 600; display: inline-block; transition: 0.3s; border-bottom: 2px solid transparent; }
-        /* Green - Tech/Key Terms */
-        mark.tech { background: rgba(46, 164, 79, 0.15); color: #99ffbb; border-color: var(--accent); }
-        /* Blue - Actions/Logic */
-        mark.logic { background: rgba(59, 130, 246, 0.15); color: #99ccff; border-color: var(--blue); }
-        /* Red - Alerts/Critical */
-        mark.alert { background: rgba(255, 68, 68, 0.15); color: #ff9999; border-color: var(--stop); }
+        /* NEON CREDITS BY MOHSIN */
+        .credits { margin-top: 15px; font-size: 11px; color: var(--stats); text-align: center; border-top: 1px solid var(--border); padding-top: 15px; letter-spacing: 0.5px; transition: 0.4s ease; cursor: default; }
+        .credits b { color: var(--accent); transition: 0.3s; }
+        .credits:hover { color: #fff; transform: translateY(-2px); }
+        .credits:hover b { text-shadow: 0 0 12px var(--accent), 0 0 20px var(--accent); color: #fff; }
 
         /* CHAT FLOW */
         #chat-flow { flex: 1; overflow-y: auto; padding: 40px 15%; scroll-behavior: smooth; }
@@ -40,9 +30,21 @@
         .user-avatar { background: rgba(255,255,255,0.03); border: 1px solid var(--border); }
         .content { flex: 1; line-height: 1.8; }
 
+        /* BUTTONS & PILLS */
+        button, .brain-pill, #send-btn { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; user-select: none; }
+        button:active, .brain-pill:active { transform: scale(0.94); }
+        .brain-pill { padding: 12px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 8px; font-size: 13px; display: flex; align-items: center; gap: 10px; color: var(--stats); }
+        .brain-pill.active { border-color: var(--accent); color: #fff; background: rgba(46, 164, 79, 0.1); box-shadow: 0 0 15px rgba(46, 164, 79, 0.1); }
+
+        /* HIGHLIGHTS */
+        mark { padding: 2px 6px; border-radius: 4px; font-weight: 600; display: inline-block; transition: 0.3s; border-bottom: 2px solid transparent; }
+        mark.tech { background: rgba(46, 164, 79, 0.15); color: #99ffbb; border-color: var(--accent); }
+        mark.logic { background: rgba(59, 130, 246, 0.15); color: #99ccff; border-color: var(--blue); }
+        mark.alert { background: rgba(255, 68, 68, 0.15); color: #ff9999; border-color: var(--stop); }
+
         /* INPUT AREA */
         .input-deck { padding: 20px 15% 40px; background: var(--bg); }
-        .input-bar { background: var(--panel); border: 1px solid var(--border); border-radius: 24px; padding: 14px 22px; display: flex; align-items: center; gap: 15px; transition: 0.3s; }
+        .input-bar { background: var(--panel); border: 1px solid var(--border); border-radius: 24px; padding: 14px 22px; display: flex; align-items: center; gap: 15px; }
         .input-bar:focus-within { border-color: var(--accent); box-shadow: 0 0 25px rgba(46,164,79,0.1); }
         textarea { flex: 1; background: none; border: none; color: #fff; outline: none; resize: none; font-family: inherit; font-size: 1rem; max-height: 200px; }
 
@@ -68,6 +70,7 @@
             <div class="brain-pill" onclick="resetTransmission()" style="color:var(--stop); border:none">
                 <span class="material-symbols-rounded">restart_alt</span> Reset Sync
             </div>
+            <div class="credits">Made By <b>Mohsin</b></div>
         </div>
     </nav>
 
@@ -75,7 +78,7 @@
         <div id="chat-flow"></div>
         <div class="input-deck">
             <div class="input-bar">
-                <textarea id="main-in" placeholder="Command..." rows="1"></textarea>
+                <textarea id="main-in" placeholder="Ask me anything..." rows="1"></textarea>
                 <div id="send-btn" style="color:var(--accent); cursor:pointer;" onclick="execute()">
                     <span class="material-symbols-rounded">send</span>
                 </div>
@@ -96,19 +99,16 @@
 
         function resetTransmission() {
             document.getElementById('chat-flow').innerHTML = "";
-            renderMsg("Neural Core Synchronized.", 'ai');
+            renderMsg("Interface ready. What's on your mind?", 'ai');
         }
 
         function parseContent(text) {
-            // Image Gen Detection
             if (text.toLowerCase().includes("generate") && (text.toLowerCase().includes("image"))) {
                 const prompt = text.replace(/generate|image|an|a/gi, "").trim();
                 const url = `https://pollinations.ai/p/${encodeURIComponent(prompt)}?width=1024&height=1024&nologo=true`;
-                return `Visual stream initialized: <br><img src="${url}" class="gen-image">`;
+                return `Here is that image for you: <br><img src="${url}" class="gen-image">`;
             }
 
-            // NEURAL HIGHLIGHTING (Multi-Color)
-            // Maps **text** to specific highlight classes based on keywords
             text = text.replace(/\*\*([\s\S]*?)\*\*/g, (match, word) => {
                 let type = 'tech';
                 const lower = word.toLowerCase();
@@ -117,16 +117,9 @@
                 return `<mark class="${type}">${word}</mark>`;
             });
 
-            // 3-Code Suite Logic
-            const blocks = [...text.matchAll(/```([\s\S]*?)```/g)];
-            if (blocks.length >= 3) {
-                // ... (existing suite logic to combine variants) ...
-                return text.replace(/```[\s\S]*?```/g, '') + " [3 Variants Generated]"; 
-            }
             return text;
         }
 
-        // Enter to Send
         document.getElementById('main-in').addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -144,7 +137,7 @@
 
             renderMsg(prompt, 'user');
             input.value = '';
-            const aiMsg = renderMsg("Processing...", 'ai');
+            const aiMsg = renderMsg("Thinking...", 'ai');
 
             try {
                 const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -152,12 +145,15 @@
                     headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         model: activeModel,
-                        messages: [{ role: "system", content: "You are Himanshu AI. Bold (**) key technical terms. If asked for code, provide 3 variations." }, { role: "user", content: prompt }]
+                        messages: [
+                            { role: "system", content: "You are Himanshu AI. Talk like a helpful, smart human peer. Use simple words. Don't be robotic or over-explain. Use **bolding** for important terms." }, 
+                            { role: "user", content: prompt }
+                        ]
                     })
                 });
                 const data = await res.json();
                 aiMsg.querySelector('.content').innerHTML = parseContent(data.choices[0].message.content);
-            } catch(e) { aiMsg.querySelector('.content').innerText = "Error: " + e.message; }
+            } catch(e) { aiMsg.querySelector('.content').innerText = "Looks like there's a connection issue."; }
         }
 
         function renderMsg(text, role) {
