@@ -26,7 +26,15 @@
         .avatar { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: 800; }
         .ai-avatar { background: var(--accent); color: #fff; }
         .user-avatar { background: rgba(255,255,255,0.03); border: 1px solid var(--border); }
-        .content { flex: 1; line-height: 1.7; position: relative; }
+        .content { flex: 1; line-height: 1.7; position: relative; word-wrap: break-word; }
+        
+        /* NEW STYLES FOR CODE, LINKS, AND EMBEDS */
+        pre { background: #161618; padding: 15px; border-radius: 10px; border: 1px solid var(--border); overflow-x: auto; font-family: 'JetBrains Mono', monospace; margin: 10px 0; }
+        code { font-family: 'JetBrains Mono', monospace; color: #a5d6ff; }
+        a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: 0.2s; }
+        a:hover { border-bottom: 1px solid var(--accent); }
+        .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; margin: 15px 0; border: 1px solid var(--border); }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
         
         .transmission-meta { display: flex; gap: 10px; margin-top: 8px; font-family: 'JetBrains Mono'; font-size: 10px; color: var(--stats); text-transform: uppercase; }
 
@@ -55,8 +63,7 @@
     </nav>
 
     <main class="viewport">
-        <div id="chat-flow">
-            </div>
+        <div id="chat-flow"></div>
 
         <div class="input-deck">
             <div class="brain-switch">
@@ -76,10 +83,31 @@
         let activeModel = "llama-3.3-70b-versatile";
         let currentController = null;
 
-        // Reset Chat Function
+        // Helper to parse formatting
+        function parseFormatting(text) {
+            // Hyperlinks: [text](url)
+            text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+            
+            // Code blocks: ```code```
+            text = text.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+            
+            // Inline code: `code`
+            text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+            // YouTube Embeds (Detects standard youtube links)
+            const ytRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+            const ytMatch = text.match(ytRegex);
+            if(ytMatch) {
+                const videoId = ytMatch[1];
+                text += `<div class="video-container"><iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe></div>`;
+            }
+
+            return text;
+        }
+
         window.resetTransmission = () => {
             const flow = document.getElementById('chat-flow');
-            flow.innerHTML = ""; // Wipe UI
+            flow.innerHTML = ""; 
             renderMsg("<strong>Neural Link Reset.</strong> Memory cleared. Standing by for new input...", 'ai');
         };
 
@@ -122,15 +150,11 @@
                 const duration = ((Date.now() - startTime) / 1000).toFixed(2);
                 const fullText = data.choices[0].message.content;
                 
-                contentDiv.innerHTML = "";
-                const words = fullText.split(" ");
-                for(let i = 0; i < words.length; i++) {
-                    contentDiv.innerHTML += words[i] + " ";
-                    document.getElementById('chat-flow').scrollTop = document.getElementById('chat-flow').scrollHeight;
-                    await new Promise(r => setTimeout(r, 40));
-                }
-
+                // Parse the text for code/links/embeds before displaying
+                contentDiv.innerHTML = parseFormatting(fullText);
                 contentDiv.innerHTML += `<div class="transmission-meta">Time: <span style="color:var(--accent)">${duration}s</span> | Core: ${activeModel.includes('70b')?'70B':'8B'}</div>`;
+                
+                document.getElementById('chat-flow').scrollTop = document.getElementById('chat-flow').scrollHeight;
 
             } catch (e) {
                 contentDiv.innerHTML = e.name === 'AbortError' ? "<em style='color:var(--stop)'>Terminated.</em>" : "Error: " + e.message;
@@ -147,7 +171,9 @@
             const flow = document.getElementById('chat-flow');
             const div = document.createElement('div');
             div.className = 'msg';
-            div.innerHTML = `<div class="avatar ${role}-avatar">${role==='user'?'P':'H'}</div><div class="content">${text}</div>`;
+            // User messages don't need full parsing usually, but we apply it to AI
+            const formattedText = role === 'ai' ? parseFormatting(text) : text;
+            div.innerHTML = `<div class="avatar ${role}-avatar">${role==='user'?'P':'H'}</div><div class="content">${formattedText}</div>`;
             flow.appendChild(div);
             flow.scrollTop = flow.scrollHeight;
             return div;
@@ -155,7 +181,6 @@
 
         document.getElementById('main-in').addEventListener('keydown', (e) => { if(e.key==='Enter' && !e.shiftKey) { e.preventDefault(); execute(); }});
         
-        // Boot-up
         resetTransmission();
     </script>
 </body>
