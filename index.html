@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Himanshu AI | Neural Gateway v10.5</title>
     <script src="https://js.puter.com/v2/"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Outfit:wght@300;600;800&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Outfit:wght@300;600;800&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
     <style>
-        :root { --bg: #050507; --accent: #2ea44f; --stop: #ff4444; --border: rgba(255, 255, 255, 0.08); --panel: #0a0a0c; --stats: #71717a; }
+        :root { --bg: #050507; --accent: #2ea44f; --stop: #ff4444; --border: rgba(255, 255, 255, 0.08); --panel: #0a0a0c; --stats: #71717a; --highlight: rgba(46, 164, 79, 0.2); }
         body { margin: 0; background: var(--bg); color: #e4e4e7; font-family: 'Outfit', sans-serif; display: flex; height: 100vh; overflow: hidden; }
         .sidebar { width: 260px; background: var(--panel); border-right: 1px solid var(--border); padding: 30px 20px; display: flex; flex-direction: column; }
         
@@ -28,11 +28,17 @@
         .user-avatar { background: rgba(255,255,255,0.03); border: 1px solid var(--border); }
         .content { flex: 1; line-height: 1.7; position: relative; word-wrap: break-word; }
         
-        /* NEW STYLES FOR CODE, LINKS, AND EMBEDS */
-        pre { background: #161618; padding: 15px; border-radius: 10px; border: 1px solid var(--border); overflow-x: auto; font-family: 'JetBrains Mono', monospace; margin: 10px 0; }
-        code { font-family: 'JetBrains Mono', monospace; color: #a5d6ff; }
+        /* NEW HIGHLIGHT STYLE */
+        mark { background: var(--highlight); color: #fff; padding: 2px 6px; border-radius: 4px; font-weight: 600; border-bottom: 1px solid var(--accent); }
+
+        pre { background: #0e0e10; padding: 15px; border-radius: 10px; border: 1px solid var(--border); overflow-x: auto; font-family: 'JetBrains Mono', monospace; margin: 15px 0; position: relative; }
+        code { font-family: 'JetBrains Mono', monospace; color: #a5d6ff; font-size: 0.9rem; }
         a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: 0.2s; }
         a:hover { border-bottom: 1px solid var(--accent); }
+        
+        .copy-btn { position: absolute; top: 8px; right: 8px; padding: 5px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 6px; color: var(--stats); cursor: pointer; display: flex; align-items: center; transition: 0.2s; }
+        .copy-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
         .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; margin: 15px 0; border: 1px solid var(--border); }
         .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
         
@@ -83,32 +89,43 @@
         let activeModel = "llama-3.3-70b-versatile";
         let currentController = null;
 
-        // Helper to parse formatting
+        window.copyCode = (btn) => {
+            const code = btn.parentElement.querySelector('code').innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                const icon = btn.querySelector('.material-symbols-rounded');
+                icon.innerText = 'done';
+                setTimeout(() => icon.innerText = 'content_copy', 2000);
+            });
+        };
+
         function parseFormatting(text) {
-            // Hyperlinks: [text](url)
+            // Remove standard Markdown bold (**) and turn into Highlights (<mark>)
+            text = text.replace(/\*\*([\s\S]*?)\*\*/g, '<mark>$1</mark>');
+
+            // Hyperlinks
             text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
             
-            // Code blocks: ```code```
-            text = text.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+            // Code blocks
+            text = text.replace(/```([\s\S]*?)```/g, (match, code) => {
+                return `<pre><button class="copy-btn" onclick="copyCode(this)"><span class="material-symbols-rounded">content_copy</span></button><code>${code.trim()}</code></pre>`;
+            });
             
-            // Inline code: `code`
+            // Inline code
             text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
 
-            // YouTube Embeds (Detects standard youtube links)
+            // YouTube
             const ytRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
             const ytMatch = text.match(ytRegex);
             if(ytMatch) {
-                const videoId = ytMatch[1];
-                text += `<div class="video-container"><iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe></div>`;
+                text += `<div class="video-container"><iframe src="https://www.youtube.com/embed/${ytMatch[1]}" allowfullscreen></iframe></div>`;
             }
 
             return text;
         }
 
         window.resetTransmission = () => {
-            const flow = document.getElementById('chat-flow');
-            flow.innerHTML = ""; 
-            renderMsg("<strong>Neural Link Reset.</strong> Memory cleared. Standing by for new input...", 'ai');
+            document.getElementById('chat-flow').innerHTML = ""; 
+            renderMsg("Neural Link Reset. Memory cleared. Standing by...", 'ai');
         };
 
         window.switchModel = (m, pid) => {
@@ -143,21 +160,27 @@
                     method: 'POST',
                     signal: currentController.signal,
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${NL_AUTH}` },
-                    body: JSON.stringify({ model: activeModel, messages: [{ role: "user", content: p }] })
+                    // Instructing the AI via system prompt to be more descriptive and structured
+                    body: JSON.stringify({ 
+                        model: activeModel, 
+                        messages: [
+                            { role: "system", content: "You are Himanshu AI. Provide technical, clear responses. Use bolding (**) for key terms." },
+                            { role: "user", content: p }
+                        ] 
+                    })
                 });
                 
                 const data = await res.json();
                 const duration = ((Date.now() - startTime) / 1000).toFixed(2);
                 const fullText = data.choices[0].message.content;
                 
-                // Parse the text for code/links/embeds before displaying
                 contentDiv.innerHTML = parseFormatting(fullText);
                 contentDiv.innerHTML += `<div class="transmission-meta">Time: <span style="color:var(--accent)">${duration}s</span> | Core: ${activeModel.includes('70b')?'70B':'8B'}</div>`;
                 
                 document.getElementById('chat-flow').scrollTop = document.getElementById('chat-flow').scrollHeight;
 
             } catch (e) {
-                contentDiv.innerHTML = e.name === 'AbortError' ? "<em style='color:var(--stop)'>Terminated.</em>" : "Error: " + e.message;
+                contentDiv.innerHTML = e.name === 'AbortError' ? "Terminated." : "Error: " + e.message;
             }
         }
 
@@ -171,7 +194,6 @@
             const flow = document.getElementById('chat-flow');
             const div = document.createElement('div');
             div.className = 'msg';
-            // User messages don't need full parsing usually, but we apply it to AI
             const formattedText = role === 'ai' ? parseFormatting(text) : text;
             div.innerHTML = `<div class="avatar ${role}-avatar">${role==='user'?'P':'H'}</div><div class="content">${formattedText}</div>`;
             flow.appendChild(div);
